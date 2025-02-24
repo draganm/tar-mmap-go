@@ -49,7 +49,6 @@ func Open(fileName string) (*TarMmap, error) {
 	pos := int64(0)
 
 	for {
-		fmt.Println("pos", pos, len(mmap))
 
 		headerBlock := mmap[pos : pos+512]
 		hdr, err := tar.NewReader(bytes.NewReader(headerBlock)).Next()
@@ -69,16 +68,12 @@ func Open(fileName string) (*TarMmap, error) {
 		// 	return nil, err
 		// }
 
-		fmt.Println(hdr.Name, len(data), hdr.Size)
-
 		files = append(files, data)
 
 		blocks := hdr.Size / 512
 		if hdr.Size%512 != 0 {
 			blocks++
 		}
-
-		fmt.Println("blocks", blocks)
 
 		pos += (blocks + 1) * 512
 

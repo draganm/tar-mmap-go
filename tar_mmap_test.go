@@ -4,19 +4,16 @@ import (
 	"testing"
 
 	tarmmap "github.com/draganm/tar-mmap-go"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTwoFilesTar(t *testing.T) {
 	tm, err := tarmmap.Open("fixtures/two-files.tar")
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
-	if len(tm.Headers) != 2 {
-		t.Fatalf("Expected 2 headers, got %d", len(tm.Headers))
-	}
+	require.Len(t, tm.Headers, 2)
+	require.Len(t, tm.Files, 2)
 
-	if len(tm.Files) != 2 {
-		t.Fatalf("Expected 2 files, got %d", len(tm.Files))
-	}
+	err = tm.Close()
+	require.NoError(t, err)
 }

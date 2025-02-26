@@ -3,6 +3,7 @@ package tarmmap
 import (
 	"archive/tar"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -88,4 +89,11 @@ func Open(fileName string) (*TarMmap, error) {
 		mmap:    mmap,
 		f:       f,
 	}, nil
+}
+
+func (t *TarMmap) Close() error {
+	return errors.Join(
+		t.mmap.Unlock(),
+		t.f.Close(),
+	)
 }

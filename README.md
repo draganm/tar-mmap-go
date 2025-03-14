@@ -11,7 +11,6 @@ A Go library for memory-mapped access to tar files, optimized for fast and effic
 - **Random Access**: Immediate access to any file in the archive without sequential reading
 
 ## Installation
-
 ```bash
 go get github.com/draganm/tar-mmap-go
 ```
@@ -35,13 +34,14 @@ func main() {
     if err != nil {
         panic(err)
     }
+    defer tm.Close()
     
-    // Access file headers and contents
-    for i, header := range tm.Headers {
-        fmt.Printf("File: %s, Size: %d bytes\n", header.Name, header.Size)
+    // Access file sections (headers and contents)
+    for _, section := range tm.Sections {
+        fmt.Printf("File: %s, Size: %d bytes\n", section.Header.Name, section.Header.Size)
         
         // Access file content directly as []byte
-        content := tm.Files[i]
+        content := section.Data
         // Do something with content...
     }
 }
@@ -77,4 +77,4 @@ This library currently only supports tar files with USTAR headers. This is a del
 
 ## License
 
-MIT License - see the [LICENSE](LICENSE) file for details. 
+MIT License - see the [LICENSE](LICENSE) file for details.

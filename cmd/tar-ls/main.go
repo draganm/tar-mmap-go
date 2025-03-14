@@ -20,8 +20,12 @@ func main() {
 			if err != nil {
 				return fmt.Errorf("failed to open tar file: %w", err)
 			}
-			for _, f := range mm.Headers {
-				fmt.Println(f.Name)
+			for _, section := range mm.Sections {
+				fmt.Printf("%s (header offset: %d, end offset: %d, size: %d)\n",
+					section.Header.Name,
+					section.HeaderOffset,
+					section.EndOfDataOffset,
+					section.Header.Size)
 			}
 
 			return nil

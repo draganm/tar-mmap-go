@@ -11,11 +11,17 @@ import (
 	"github.com/edsrzf/mmap-go"
 )
 
+type TarSection struct {
+	Header          *tar.Header
+	Data            []byte
+	HeaderOffset    uint64
+	EndOfDataOffset uint64
+}
+
 type TarMmap struct {
-	Headers []*tar.Header
-	Files   [][]byte
-	mmap    mmap.MMap
-	f       *os.File
+	Sections []TarSection
+	mmap     mmap.MMap
+	f        *os.File
 }
 
 func Open(fileName string) (*TarMmap, error) {
@@ -41,16 +47,16 @@ func Open(fileName string) (*TarMmap, error) {
 	}
 	// defer mmap.Unmap()
 
-	// var (
-	// 	buf     = bytes.NewBuffer(mmap)
-	headers := []*tar.Header{}
-	var files = [][]byte{}
-	// )
+	var sections []TarSection
 
-	pos := int64(0)
+	pos := uint64(0)
 
 	for {
+		if pos >= uint64(len(mmap)) {
+			break
+		}
 
+		headerOffset := pos
 		headerBlock := mmap[pos : pos+512]
 		hdr, err := tar.NewReader(bytes.NewReader(headerBlock)).Next()
 		if err == io.EOF {
@@ -61,33 +67,33 @@ func Open(fileName string) (*TarMmap, error) {
 			return nil, err
 		}
 
-		headers = append(headers, hdr)
+		dataOffset := pos + 512
+		data := mmap[dataOffset : dataOffset+uint64(hdr.Size)]
 
-		data := mmap[pos+512 : pos+512+hdr.Size]
-		// data := make([]byte, hdr.Size)
-		// if _, err := io.ReadFull(buf, data); err != nil {
-		// 	return nil, err
-		// }
-
-		files = append(files, data)
-
-		blocks := hdr.Size / 512
-		if hdr.Size%512 != 0 {
+		blocks := uint64(hdr.Size) / 512
+		if uint64(hdr.Size)%512 != 0 {
 			blocks++
 		}
 
-		pos += (blocks + 1) * 512
+		// Move to the next header position
+		endOfDataOffset := pos + (blocks+1)*512
 
-		if pos >= int64(len(mmap)) {
-			break
+		section := TarSection{
+			Header:          hdr,
+			Data:            data,
+			HeaderOffset:    headerOffset,
+			EndOfDataOffset: endOfDataOffset,
 		}
+
+		sections = append(sections, section)
+
+		pos = endOfDataOffset
 	}
 
 	return &TarMmap{
-		Headers: headers,
-		Files:   files,
-		mmap:    mmap,
-		f:       f,
+		Sections: sections,
+		mmap:     mmap,
+		f:        f,
 	}, nil
 }
 

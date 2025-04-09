@@ -49,15 +49,40 @@ func main() {
 
 ### Command Line Tool
 
-The package includes a simple command-line tool for listing the contents of tar files:
+The package includes a powerful command-line tool for working with tar files:
 
 ```bash
 # Install the command-line tool
-go install github.com/draganm/tar-mmap-go/cmd/tar-ls
+go install github.com/draganm/tar-mmap-go/cmd/tar-mmap
 
 # List the contents of a tar file
-tar-ls archive.tar
+tar-mmap list archive.tar
+
+# List with human-readable sizes
+tar-mmap list --human archive.tar
+
+# List with detailed information including offsets
+tar-mmap list --verbose archive.tar
+
+# Create a new tar from a subset of files (from index 0 to 5)
+tar-mmap sub-tar --to 5 --output subset.tar archive.tar
+
+# Create a new tar from a subset of files (from index 3 to 7)
+tar-mmap sub-tar --from 3 --to 7 --output subset.tar archive.tar
 ```
+
+#### Available Commands
+
+- **list (ls)**: List contents of a tar file
+  - `--human`: Show file sizes in human-readable format (KB, MB, etc.)
+  - `--verbose` (`-v`): Show detailed information including header and data offsets
+
+- **sub-tar**: Create a new tar file from a subset of files in the source tar
+  - `--from`: Starting index of files to include (default: 0)
+  - `--to`: Ending index of files to include (required)
+  - `--output` (`-o`): Output tar file path (required)
+
+The `sub-tar` command uses memory mapping for efficient extraction, copying the raw bytes directly without reparsing the tar structure, resulting in extremely fast operation.
 
 ## Features
 

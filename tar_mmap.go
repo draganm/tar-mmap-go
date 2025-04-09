@@ -20,7 +20,7 @@ type TarSection struct {
 
 type TarMmap struct {
 	Sections []TarSection
-	mmap     mmap.MMap
+	Mmap     mmap.MMap
 	f        *os.File
 }
 
@@ -92,14 +92,14 @@ func Open(fileName string) (*TarMmap, error) {
 
 	return &TarMmap{
 		Sections: sections,
-		mmap:     mmap,
+		Mmap:     mmap,
 		f:        f,
 	}, nil
 }
 
 func (t *TarMmap) Close() error {
 	return errors.Join(
-		t.mmap.Unlock(),
+		t.Mmap.Unlock(),
 		t.f.Close(),
 	)
 }

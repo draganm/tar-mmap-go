@@ -99,7 +99,7 @@ func Open(fileName string) (*TarMmap, error) {
 
 func (t *TarMmap) Close() error {
 	return errors.Join(
-		t.Mmap.Unlock(),
+		t.Mmap.Unmap(),
 		t.f.Close(),
 	)
 }
